@@ -1,4 +1,4 @@
-import { signOut } from "@/lib/auth";
+import { signOut } from "@/lib/auth/authConfig";
 
 export function SignOut() {
 	return (

@@ -1,4 +1,4 @@
-import { auth } from "@/lib/auth";
+import { auth } from "@/lib/auth/authConfig";
 
 export default async function UserAvatar() {
 	const session = await auth();

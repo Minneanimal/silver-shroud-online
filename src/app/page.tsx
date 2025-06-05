@@ -1,12 +1,12 @@
 import { SignIn } from "@/features/auth/SignInButton";
 import styles from "./page.module.css";
-import { auth } from "@/lib/auth";
 import { SignOut } from "@/features/auth/SignOutButton";
+import { checkIsAuthenticated } from "@/lib/auth/isAuthenticated";
 
 export default async function Home() {
-	const session = await auth();
+	const authenticated = await checkIsAuthenticated();
 
-	if (!session?.user) return <SignIn />;
+	if (!authenticated) return <SignIn />;
 	return (
 		<div className={styles.page}>
 			<main className={styles.main}>
