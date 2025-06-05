@@ -1,6 +1,6 @@
 "use server";
 
-import { signIn } from "./authConfig";
+import { signIn } from "./auth";
 
 export const handleGithubSignIn = async () => {
 	try {

@@ -1,4 +1,4 @@
-import { signIn } from "@/lib/auth/authConfig";
+import { signIn } from "@/lib/auth/auth";
 
 export function SignIn() {
 	return (

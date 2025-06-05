@@ -1,7 +1,7 @@
 import NextAuth from "next-auth";
 import PostgresAdapter from "@auth/pg-adapter";
 import { Pool } from "pg";
-import GitHub from "next-auth/providers/github";
+import authConfig from "./auth.config";
 
 const pool = new Pool({
 	host: process.env.DB_HOST,
@@ -15,7 +15,7 @@ const pool = new Pool({
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
 	adapter: PostgresAdapter(pool),
-	providers: [GitHub],
+	...authConfig,
 	session: {
 		strategy: "jwt",
 		maxAge: 2592000,
@@ -39,6 +39,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 					id: token.id as string,
 				},
 			};
+		},
+		async authorized({ request, auth }) {
+			return !!auth;
 		},
 	},
 });
