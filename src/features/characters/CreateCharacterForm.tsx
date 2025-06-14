@@ -1,75 +1,53 @@
 "use client";
+import { Race, Character } from "@/types";
 import { useState } from "react";
-import { rollDice, parseDiceNotation } from "@/lib/dice";
-
-interface Race {
-	id: number;
-	name: string;
-	movement?: number;
-	description?: string;
-	str: string;
-	str_modifier: number;
-	con: string;
-	con_modifier: number;
-	dex: string;
-	dex_modifier: number;
-	int: string;
-	int_modifier: number;
-	pow: string;
-	pow_modifier: number;
-	cha: string;
-	cha_modifier: number;
-	siz: string;
-	siz_modifier: number;
-}
 
 interface Props {
 	races: Race[];
+	user: any;
 }
 
-export default function CharacterCreationForm({ races }: Props) {
-	const [selectedRaceId, setSelectedRaceId] = useState<number | "">("");
-	const [strength, setStrength] = useState<number | null>(null);
-	const [constitution, setConstitution] = useState<number | null>(null);
-	const [size, setSize] = useState<number | null>(null);
-	const [dexterity, setDexterity] = useState<number | null>(null);
-	const [intelligence, setIntelligence] = useState<number | null>(null);
-	const [power, setPower] = useState<number | null>(null);
-	const [charisma, setCharisma] = useState<number | null>(null);
+export default function RaceSelector({ races, user }: Props) {
+	const [selectedRaceId, setSelectedRaceId] = useState<number>(1);
+	const [name, setName] = useState<string>("");
+	const [age, setAge] = useState<number>(20);
+	const [generatedCharacter, setGeneratedCharacter] =
+		useState<Character | null>(null);
+	const [isLoading, setIsLoading] = useState<boolean>(false);
 
-	console.log(
-		"Selected race:",
-		races.find((r) => r.id === selectedRaceId)
-	);
+	async function generateStats() {
+		setIsLoading(true);
+		try {
+			const response = await fetch("/api/characters/generate-stats", {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify({
+					name,
+					age: age,
+					race: races.find((r) => r.id === selectedRaceId),
+					level: 1,
+					user_id: user.id,
+				}),
+			});
 
-	const rollStat = (stat: string, modifier: number): number => {
-		console.log("Rolling stat:", stat, "with modifier:", modifier);
-		const { numDice, sides } = parseDiceNotation(stat);
-		return rollDice(sides, numDice, modifier);
-	};
+			if (!response.ok) {
+				console.error("Failed to generate character stats");
+				return;
+			}
 
-	const handleRoll = () => {
-		const race = races.find((r) => r.id === selectedRaceId);
-		if (!race) return;
-		const newStrength = rollStat(race.str, race.str_modifier);
-		const newConstitution = rollStat(race.con, race.con_modifier);
-		const newSize = rollStat(race.siz, race.siz_modifier);
-		const newDexterity = rollStat(race.dex, race.dex_modifier);
-		const newIntelligence = rollStat(race.int, race.int_modifier);
-		const newPower = rollStat(race.pow, race.pow_modifier);
-		const newCharisma = rollStat(race.cha, race.cha_modifier);
-		setStrength(newStrength);
-		setConstitution(newConstitution);
-		setSize(newSize);
-		setDexterity(newDexterity);
-		setIntelligence(newIntelligence);
-		setPower(newPower);
-		setCharisma(newCharisma);
-	};
+			const character = await response.json();
+			setGeneratedCharacter(character);
+		} catch (error) {
+			console.error("Error generating character stats:", error);
+		} finally {
+			setIsLoading(false);
+		}
+	}
 
 	return (
 		<div>
-			<h1>Create Character</h1>
 			<label>
 				Race:
 				<select
@@ -89,28 +67,83 @@ export default function CharacterCreationForm({ races }: Props) {
 					))}
 				</select>
 			</label>
+			<label>
+				Name:
+				<input
+					type="text"
+					value={name}
+					onChange={(e) => setName(e.target.value)}
+					placeholder="Enter character name"
+				/>
+			</label>
+			<label>
+				Age:
+				<input
+					type="number"
+					value={age}
+					onChange={(e) => setAge(Number(e.target.value))}
+					min={0}
+					max={200}
+				/>
+			</label>
 			<button
-				onClick={handleRoll}
-				disabled={selectedRaceId === ""}>
-				Roll Stats
+				onClick={generateStats}
+				disabled={!name || selectedRaceId === 0 || isLoading}>
+				{isLoading ? "Generating..." : "Generate Stats"}
 			</button>
-			{strength !== null &&
-				constitution !== null &&
-				size !== null &&
-				dexterity !== null &&
-				intelligence !== null &&
-				power !== null &&
-				charisma !== null && (
-					<div>
-						<p>Strength: {strength}</p>
-						<p>Constitution: {constitution}</p>
-						<p>Size: {size}</p>
-						<p>Dexterity: {dexterity}</p>
-						<p>Intelligence: {intelligence}</p>
-						<p>Power: {power}</p>
-						<p>Charisma: {charisma}</p>
+
+			{generatedCharacter && (
+				<div
+					style={{
+						marginTop: "20px",
+						padding: "20px",
+						border: "1px solid #ccc",
+						borderRadius: "8px",
+					}}>
+					<h3>Character Created Successfully!</h3>
+					<div
+						style={{
+							display: "grid",
+							gridTemplateColumns: "repeat(2, 1fr)",
+							gap: "10px",
+						}}>
+						<div>
+							<strong>Name:</strong> {generatedCharacter.name}
+						</div>
+						<div>
+							<strong>Race:</strong>{" "}
+							{races.find((r) => r.id === generatedCharacter.race_id)?.name}
+						</div>
+						<div>
+							<strong>Level:</strong> {generatedCharacter.level}
+						</div>
+						<div>
+							<strong>Movement:</strong> {generatedCharacter.movement}
+						</div>
+						<div>
+							<strong>Strength:</strong> {generatedCharacter.str}
+						</div>
+						<div>
+							<strong>Constitution:</strong> {generatedCharacter.con}
+						</div>
+						<div>
+							<strong>Size:</strong> {generatedCharacter.siz}
+						</div>
+						<div>
+							<strong>Dexterity:</strong> {generatedCharacter.dex}
+						</div>
+						<div>
+							<strong>Intelligence:</strong> {generatedCharacter.int}
+						</div>
+						<div>
+							<strong>Power:</strong> {generatedCharacter.pow}
+						</div>
+						<div>
+							<strong>Charisma:</strong> {generatedCharacter.cha}
+						</div>
 					</div>
-				)}
+				</div>
+			)}
 		</div>
 	);
 }

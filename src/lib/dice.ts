@@ -36,3 +36,9 @@ export function rollDice(
 	}
 	return sum + modifier;
 }
+
+export const rollStat = (stat: string, modifier: number): number => {
+	console.log("Rolling stat:", stat, "with modifier:", modifier);
+	const { numDice, sides } = parseDiceNotation(stat);
+	return rollDice(sides, numDice, modifier);
+};

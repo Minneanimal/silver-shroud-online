@@ -9,3 +9,11 @@ export const checkIsAuthenticated = async () => {
 	}
 	return false;
 };
+
+export const getUser = async () => {
+	const session = await auth();
+	if (session) {
+		return session.user;
+	}
+	return null;
+};
