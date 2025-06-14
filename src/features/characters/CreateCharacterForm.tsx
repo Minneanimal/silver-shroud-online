@@ -1,6 +1,7 @@
 "use client";
 import { Race, Character } from "@/types";
 import { useState } from "react";
+import { getDamageModifierInfo } from "@/lib/damageModifier";
 
 interface Props {
 	races: Race[];
@@ -140,6 +141,31 @@ export default function RaceSelector({ races, user }: Props) {
 						</div>
 						<div>
 							<strong>Charisma:</strong> {generatedCharacter.cha}
+						</div>
+						<div
+							style={{
+								gridColumn: "1 / -1",
+								marginTop: "10px",
+								padding: "10px",
+								backgroundColor: "#f5f5f5",
+								borderRadius: "4px",
+							}}>
+							<strong>Damage Modifier:</strong>{" "}
+							{
+								getDamageModifierInfo(
+									generatedCharacter.str,
+									generatedCharacter.siz
+								).modifier
+							}
+							<br />
+							<small>
+								{
+									getDamageModifierInfo(
+										generatedCharacter.str,
+										generatedCharacter.siz
+									).explanation
+								}
+							</small>
 						</div>
 					</div>
 				</div>
